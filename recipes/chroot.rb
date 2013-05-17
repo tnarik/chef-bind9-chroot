@@ -26,7 +26,7 @@ case node[:platform]
           FileUtils.cp_r node[:bind9][:openssl], File.dirname(File.join(node[:bind9][:chroot_dir], node[:bind9][:openssl]))
         end
         not_if { ::File.directory?(File.join(node[:bind9][:chroot_dir], node[:bind9][:openssl])) or
-                  !::File.directory?(node[:bind9][:openssl])) }
+                  !::File.directory?(node[:bind9][:openssl]) }
       end
     end
 end
