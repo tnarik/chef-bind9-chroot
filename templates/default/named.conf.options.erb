@@ -37,11 +37,13 @@ options {
   <% if node[:bind9][:enable_ipv6] %>
     listen-on-v6 { any; };
   <% end %>
+
+  pid-file "<%= node[:bind9][:pidfile] %>";
 };
 
 logging {
   channel default_log {
-    file "/var/log/bind/bind.log" versions 5 size 128M;
+    file "<%= node[:bind9][:log_file] %>" versions 5 size 128M;
     print-time yes;
     print-severity yes;
     print-category yes;

@@ -1,0 +1,14 @@
+# run resolvconf?
+RESOLVCONF=<%= node[:bind9][:resolvconf]? 'yes' : 'no' %>
+
+# directory where to find the pid file
+PIDDIR=<%= File.dirname(File.join(node[:bind9][:chroot_dir].to_s, node[:bind9][:pidfile])) %>
+
+# startup options for the server
+<% 
+@added_chroot_dir = ""
+if node[:bind9][:chroot_dir]
+  @added_chroot_dir=" -t #{node[:bind9][:chroot_dir]}"
+end
+%>
+OPTIONS="-u <%= node[:bind9][:user] %><%= @added_chroot_dir %>"
