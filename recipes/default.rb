@@ -78,6 +78,14 @@ template File.join(node[:bind9][:config_path], node[:bind9][:options_file]) do
   notifies :restart, "service[bind9]"
 end
 
+template File.join(node[:bind9][:config_path], node[:bind9][:config_file]) do
+  source "named.conf.erb"
+  owner node[:bind9][:user]
+  group node[:bind9][:user]
+  mode 0644
+  notifies :restart, "service[bind9]"
+end
+
 template File.join(node[:bind9][:config_path], node[:bind9][:local_file]) do
   source "named.conf.local.erb"
   owner node[:bind9][:user]

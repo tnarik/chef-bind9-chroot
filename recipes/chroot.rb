@@ -54,7 +54,7 @@ directory chroot_config_dir do
   owner node[:bind9][:user]
   group node[:bind9][:user]
   mode  0744
-  recursive true 
+  recursive true
 end
 
 ruby_block "move_config_to_chroot" do
@@ -92,4 +92,19 @@ link "bind_zones_from_chroot" do
   target_file node[:bind9][:zones_path]
   to chroot_zones_dir
   not_if { ::File.symlink?(node[:bind9][:zones_path]) or chroot_zones_dir.start_with?(chroot_config_dir)  }
+end
+
+directory File.join(node[:bind9][:chroot_dir].to_s, "/dev") do
+  owner node[:bind9][:user]
+  group node[:bind9][:user]
+  mode  0744
+  recursive true
+end
+
+execute "create_special_device_files" do
+  command "mknod #{node[:bind9][:chroot_dir]}/dev/null c 1 3;
+            mknod #{node[:bind9][:chroot_dir]}/dev/random c 1 8;
+            chmod 666 #{node[:bind9][:chroot_dir]}/dev/null;
+            chmod 666 #{node[:bind9][:chroot_dir]}/dev/random"
+  not_if { ::File.exists?( File.join(node[:bind9][:chroot_dir].to_s, "/dev/null")) }
 end
