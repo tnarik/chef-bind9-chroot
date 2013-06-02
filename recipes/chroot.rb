@@ -1,5 +1,4 @@
- #
-# Cookbook Name:: bind9
+# Cookbook Name:: bind9-chroot
 # Recipe:: chroot
 #
 # Copyright 2013, Tnarik Innael

@@ -1,4 +1,4 @@
-# Cookbook Name:: bind9
+# Cookbook Name:: bind9-chroot
 # Recipe:: default
 #
 # Copyright 2011, Mike Adolphs
@@ -56,7 +56,7 @@ directory File.join(node[:bind9][:chroot_dir].to_s, node[:bind9][:zones_path]) d
 end
 
 if !node[:bind9][:chroot_dir].nil?
-  include_recipe "bind9::chroot"
+  include_recipe "bind9-chroot::chroot"
 end
 
 class Chef::Recipe::NameServer
