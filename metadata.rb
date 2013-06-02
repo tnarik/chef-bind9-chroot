@@ -1,4 +1,4 @@
-name             "bind9"
+name             "bind9-chroot"
 maintainer       "Tnarik Innael"
 maintainer_email "tnarik@lecafeautomatique.co.uk"
 license          "Apache 2.0"
