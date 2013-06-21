@@ -64,10 +64,11 @@ class Chef::Recipe::NameServer
 end
 
 if node[:bind9][:resolvconf]
-  file "/etc/resolvconf/resolv.conf.d/tail" do
-    content NameServer.nameserver_proxy("/etc/resolv.conf", /nameserver.*/)
-    only_if { !::File.exists?("/etc/resolvconf/resolv.conf.d/tail")  }
-  end
+  include_recipe "resolvconf"
+ # file "/etc/resolvconf/resolv.conf.d/tail" do
+ #   content NameServer.nameserver_proxy("/etc/resolv.conf", /nameserver.*/)
+ #   only_if { !::File.exists?("/etc/resolvconf/resolv.conf.d/tail")  }
+ # end
 end
 
 
