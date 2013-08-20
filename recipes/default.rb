@@ -94,7 +94,7 @@ template File.join(node[:bind9][:config_path], node[:bind9][:local_file]) do
   group node[:bind9][:user]
   mode 0644
   variables({
-    :zonefiles => search(:zones)
+    :zonefiles => search(:zones) + search(:reversezones)
   })
   notifies :restart, "service[bind9]"
 end
