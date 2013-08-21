@@ -71,6 +71,7 @@ if node[:bind9][:resolvconf]
  # end
 end
 
+include_recipe('bind9::reverse_zones')
 
 template File.join(node[:bind9][:config_path], node[:bind9][:options_file]) do
   source "named.conf.options.erb"
