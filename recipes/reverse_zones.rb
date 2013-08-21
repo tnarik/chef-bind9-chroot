@@ -27,12 +27,13 @@ end
 
 search(:reversezones).each do |zone|
   unless zone['autodomain'].nil? || zone['autodomain'] == ''
-    search(:node, "domain:#{zone['autodomain']}").each do |host|
+    zoneip = zone['domain'].scan(/[0-9]+/).join('.')
+    search(:node, "ipaddress:#{zone['autodomain']}*").each do |host|
       next if host['ipaddress'] == '' || host['ipaddress'].nil?
       zone['zone_info']['records'].push( {
         "name" => host['hostname'],
         "type" => "PTR",
-        "ip" => host['ipaddress']
+        "ip" => host['ipaddress'].scan(/[0-9]{1,3}/).reverse().join('.').sub!(/\.#{zoneip}$/, '')
       })
     end
   end
