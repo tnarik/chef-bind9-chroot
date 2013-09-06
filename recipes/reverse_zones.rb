@@ -31,7 +31,7 @@ search(:reversezones).each do |zone|
     search(:node, "ipaddress:#{zone['autodomain']}*").each do |host|
       next if host['ipaddress'] == '' || host['ipaddress'].nil?
       zone['zone_info']['records'].push( {
-        "name" => host['fqdn'] or "#{host['name']}.#{host['domain']}",
+        "name" => host['fqdn'] || "#{host['name']}.#{host['domain']}",
         "type" => "PTR",
         "ip" => host['ipaddress'].scan(/[0-9]{1,3}/).reverse().join('.').sub!(/\.#{zoneip}$/, '')
       })
