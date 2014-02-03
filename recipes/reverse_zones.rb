@@ -26,6 +26,7 @@ directory node[:bind9][:zones_path] do
 end
 
 search(:reversezones).each do |zone|
+  Chef::Log.info("Got reverse-zone #{zone[:domain]}")
   unless zone['autodomain'].nil? || zone['autodomain'] == ''
     zoneip = zone['domain'].scan(/[0-9]+/).join('.')
     search(:node, "ipaddress:#{zone['autodomain']}*").each do |host|
@@ -67,8 +68,8 @@ search(:reversezones).each do |zone|
       :nameserver => zone['zone_info']['nameserver'],
       :mail_exchange => zone['zone_info']['mail_exchange'],
       :records => zone['zone_info']['records'].sort do |a, b|
-        return a['name'] <=> b['name'] if a['ip'] == b['ip']
-        return a['ip'] <=> b['ip']
+        a['name'] <=> b['name'] if a['ip'] == b['ip']
+        a['ip'] <=> b['ip']
       end
     })
     notifies :create, resources(:template => File.join(node[:bind9][:zones_path], zone['domain'])), :immediately
