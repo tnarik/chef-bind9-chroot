@@ -38,6 +38,7 @@ directory File.join(node[:bind9][:chroot_dir].to_s, "/var/run/named") do
   not_if { ::File.directory?(File.join(node[:bind9][:chroot_dir].to_s, "/var/run/named")) }
 end
 
+
 ruby_block "modify_init_script" do
   block do
     rc = Chef::Util::FileEdit.new("/etc/init.d/bind9")
