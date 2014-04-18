@@ -1,7 +1,7 @@
 # spec_helper.rb
 require 'chefspec'
 require 'chefspec/berkshelf'
-require 'fakefs/safe'
+#require 'fakefs/safe'
 
 ChefSpec::Coverage.start!
 
