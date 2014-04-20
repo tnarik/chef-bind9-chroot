@@ -17,8 +17,6 @@
 # limitations under the License.
 #
 
-p node[:bind9][:chroot_dir]
-
 package "bind9" do
   case node[:platform]
   when "centos", "redhat", "suse", "fedora"
