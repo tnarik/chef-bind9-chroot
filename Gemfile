@@ -1,3 +1,11 @@
 source 'https://rubygems.org'
 
 gem 'berkshelf'
+gem 'test-kitchen'
+gem 'kitchen-vagrant'
+gem 'foodcritic'
+gem 'chefspec'
+gem 'strainer'
+gem 'guard'
+gem 'guard-foodcritic'
+gem 'guard-rspec'
