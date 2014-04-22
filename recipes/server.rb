@@ -93,9 +93,13 @@ template File.join(node[:bind9][:config_path], node[:bind9][:local_file]) do
   owner node[:bind9][:user]
   group node[:bind9][:user]
   mode 0644
-  variables({
-    :zonefiles => search(:zones)
-  })
+  if Chef::Config[:solo]
+    variables()
+  else
+    variables({
+      :zonefiles => search(:zones)
+    })
+  end
   notifies :restart, "service[bind9]"
 end
 
@@ -149,7 +153,6 @@ search(:zones).each do |zone|
     group node[:bind9][:user]
     mode 0644
     variables({
-      :domain => zone['domain'],
       :soa => zone['zone_info']['soa'],
       :contact => zone['zone_info']['contact'],
       :global_ttl => zone['zone_info']['global_ttl'],
@@ -157,7 +160,7 @@ search(:zones).each do |zone|
       :mail_exchange => zone['zone_info']['mail_exchange'],
       :records => zone['zone_info']['records']
     })
-    notifies :create, resources(:template => File.join(node[:bind9][:zones_path], zone['domain'])), :immediately
+    notifies :create, "template[File.join(node[:bind9][:zones_path], zone['domain'])]", :immediately
   end
 end
 

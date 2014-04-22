@@ -11,5 +11,5 @@ version          "0.4.2"
 end
 
 %w{resolvconf}.each do |cookbook|
-  depends(cookbook)
+  depends cookbook
 end
