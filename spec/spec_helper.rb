@@ -2,36 +2,50 @@
 require 'chefspec'
 require 'chefspec/berkshelf'
 
-PLATFORMS = [
+Zones = [
   {
-    'platform' => 'ubuntu',
-    'version' => '12.04',
-    'package' => 'bind9',
-    'service' => 'bind9',
-    'user' => 'bind',
-    'data_path' => '/var/cache/bind',
-    'log_dir' => '/var/log/bind',
-    'zones_path' => '/etc/bind/zones',
-    'config_path' => '/etc/bind',
-    'options_file' => 'named.conf.options',
-    'config_file' => 'named.conf',
-    'local_file' => 'named.conf.local'
-  },
-  {
-    'platform' => 'centos',
-    'version' => '6.5',
-    'package' => 'bind',
-    'service' => 'named',
-    'user' => 'named',
-    'data_path' => '/var/named',
-    'log_dir' => '/var/log/named',
-    'zones_path' => '/var/named/zones',
-    'config_path' => '/etc/named',
-    'options_file' => 'named.conf.options',
-    'config_file' => 'named.conf',
-    'local_file' => 'named.conf.local'
-  }
-]
+    'domain' => 'example.com',
+    'type' => 'master',
+    'allow_transfer' => [
+      '192.168.1.2',
+      '192.168.1.3'
+    ],
+    'also_notify' => [
+      '192.168.1.2',
+      '192.168.1.3'
+    ],
+    'zone_info' => {
+      'serial' =>'00000',
+      'soa' => 'ns.example.com',
+      'contact' => 'root.example.com',
+      'global_ttl' => 300,
+      'nameserver' => [
+        'ns1.example.com',
+        'ns2.example.com'
+      ],
+      'mail_exchange' => [
+        {
+          'host' => 'ASPMX.L.GOOGLE.COM.',
+          'priority' => 10,
+        }
+        ],
+        'records' => [
+          {
+            'name' => 'www',
+            'type' => 'A',
+            'ip' => '127.0.0.1'
+          }
+        ]    
+      }
+    },
+    {
+      'domain' => 'example.net',
+      'type' => 'slave',
+      'masters' => [
+        '192.168.1.1'
+      ]
+    }
+  ]
 
 RSpec.configure do |config|
   config.color_enabled = true

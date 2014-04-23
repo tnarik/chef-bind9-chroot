@@ -8,39 +8,9 @@ describe 'bind9-chroot::server' do
   context 'Ubuntu 12.04' do
     let(:chef_run) do 
       ChefSpec::Runner.new(:platform=>'ubuntu',:version=>'12.04') do |node|
-        node.set[:bind9][:zones] = zones
+        node.set[:bind9][:zones] = Zones
       end.converge(described_recipe)
     end
-    let(:zones) {
-      [
-        {
-          'domain' => 'example.com',
-          'zone_info' => {
-            'serial' =>'00000',
-            'soa' => 'ns.example.com',
-            'contact' => 'root.example.com',
-            'global_ttl' => 300,
-            'nameserver' => [
-              'ns1.example.com',
-              'ns2.example.com'
-            ],
-            'mail_exchange' => [
-              {
-                'host' => 'ASPMX.L.GOOGLE.COM.',
-                'priority' => 10,
-              }
-            ],
-            'records' => [
-              {
-                'name' => 'www',
-                'type' => 'A',
-                'ip' => '127.0.0.1'
-              }
-            ]    
-          }
-        }
-      ]
-    }
      
     before(:each) do
       File.stub(:readlines).with(anything).and_call_original
@@ -75,8 +45,8 @@ describe 'bind9-chroot::server' do
       )
     end
 
-    it "creates directory /var/log/bind owned by bind user" do
-      expect(chef_run).to create_directory('/var/log/bind').with(
+    it "creates directory /var/log/named owned by bind user" do
+      expect(chef_run).to create_directory('/var/log/named').with(
         user: 'bind',
         group: 'bind',
         mode: 0755,
@@ -84,10 +54,10 @@ describe 'bind9-chroot::server' do
       )
     end
 
-    it "creates directory /var/run/bind/var/log/bind owned by bind user" do
+    it "creates directory /var/run/bind/var/log/named owned by bind user" do
       chef_run.node.set[:bind9][:chroot_dir] = '/var/run/bind'
       chef_run.converge(described_recipe)
-      expect(chef_run).to create_directory('/var/run/bind/var/log/bind').with(
+      expect(chef_run).to create_directory('/var/run/bind/var/log/named').with(
         user: 'bind',
         group: 'bind',
         mode: 0755,
@@ -161,7 +131,7 @@ describe 'bind9-chroot::server' do
         user: 'bind',
         group: 'bind',
         mode: 0644,
-        variables: { :zonefiles => zones }
+        variables: { :zonefiles => Zones }
       )
     end
 
@@ -181,8 +151,8 @@ describe 'bind9-chroot::server' do
       expect(chef_run.template('/etc/default/bind9')).to notify('service[bind9]').to(:restart)
     end
 
-    it "does not create /etc/bind/zones/example.com" do
-      expect(chef_run).to_not create_template('/etc/bind/zones/example.com').with(
+    it "does not create /etc/bind/zones/db.example.com" do
+      expect(chef_run).to_not create_template('/etc/bind/zones/db.example.com').with(
         source: '/etc/bind/zones/example.com.erb',
         local: true,
         user: 'bind',
@@ -192,8 +162,8 @@ describe 'bind9-chroot::server' do
       )
     end
 
-    it "creates /etc/bind/zones/example.com.erb" do
-      expect(chef_run).to create_template('/etc/bind/zones/example.com.erb').with(
+    it "creates /etc/bind/zones/db.example.com.erb" do
+      expect(chef_run).to create_template('/etc/bind/zones/db.example.com.erb').with(
         source: 'zonefile.erb',
         user: 'bind',
         group: 'bind',
@@ -223,8 +193,12 @@ describe 'bind9-chroot::server' do
       )
     end
 
-    it "notifies /etc/bind/zones/example.com immediately" do
-      expect(chef_run.template('/etc/bind/zones/example.com.erb')).to notify("template[/etc/bind/zones/example.com]").to(:create).immediately
+    it "notifies /etc/bind/zones/db.example.com immediately" do
+      expect(chef_run.template('/etc/bind/zones/db.example.com.erb')).to notify("template[/etc/bind/zones/db.example.com]").to(:create).immediately
+    end
+
+    it "does not create /etc/bind/zones/db.example.net.erb" do
+      expect(chef_run).to_not create_template('/etc/bind/zones/db.example.net.erb')
     end
 
   end

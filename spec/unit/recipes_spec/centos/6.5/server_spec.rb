@@ -8,39 +8,10 @@ describe 'bind9-chroot::server' do
   context 'Centos 6.5' do
     let(:chef_run) do 
       ChefSpec::Runner.new(:platform=>'centos',:version=>'6.5') do |node|
-        node.set[:bind9][:zones] = zones
+        node.set[:bind9][:zones] = Zones
       end.converge(described_recipe)
     end
-    let(:zones) {
-      [
-        {
-          'domain' => 'example.com',
-          'zone_info' => {
-            'serial' =>'00000',
-            'soa' => 'ns.example.com',
-            'contact' => 'root.example.com',
-            'global_ttl' => 300,
-            'nameserver' => [
-              'ns1.example.com',
-              'ns2.example.com'
-            ],
-            'mail_exchange' => [
-              {
-                'host' => 'ASPMX.L.GOOGLE.COM.',
-                'priority' => 10,
-              }
-            ],
-            'records' => [
-              {
-                'name' => 'www',
-                'type' => 'A',
-                'ip' => '127.0.0.1'
-              }
-            ]    
-          }
-        }
-      ]
-    }
+    
      
     before(:each) do
       File.stub(:readlines).with(anything).and_call_original
@@ -156,12 +127,45 @@ describe 'bind9-chroot::server' do
       expect(chef_run.template('/etc/named/named.conf')).to notify('service[named]').to(:restart)
     end
 
-    it "creates /etc/named/named.conf.local" do
+    it "creates /etc/named/named.conf.local owned by named user" do
       expect(chef_run).to create_template('/etc/named/named.conf.local').with(
         user: 'named',
         group: 'named',
         mode: 0644,
-        variables: { :zonefiles => zones }
+        variables: { :zonefiles => Zones }
+      )
+    end
+
+    it 'fills /etc/named/named.conf.local with correct content' do
+      expect(chef_run).to render_file('/etc/named/named.conf.local').with_content(
+'//
+// Do any local configuration here
+//
+
+// Consider adding the 1918 zones here, if they are not used in your
+// organization
+//include "/etc/bind/zones.rfc1918";
+
+zone "example.com" {
+  type master;
+  file "/var/named/zones/db.example.com";
+  allow-transfer {
+    192.168.1.2;
+    192.168.1.3;
+  };
+  also-notify {
+    192.168.1.2;
+    192.168.1.3;
+  };
+};
+
+zone "example.net" {
+  type slave;
+  file "db.example.net";
+  masters {
+    192.168.1.1;
+  };
+};'
       )
     end
 
@@ -178,8 +182,8 @@ describe 'bind9-chroot::server' do
       )
     end  
 
-    it "does not create /var/named/zones/example.com" do
-      expect(chef_run).to_not create_template('/var/named/zones/example.com').with(
+    it "does not create /var/named/zones/db.example.com" do
+      expect(chef_run).to_not create_template('/var/named/zones/db.example.com').with(
         source: '/var/named/zones/example.com.erb',
         local: true,
         user: 'named',
@@ -189,8 +193,8 @@ describe 'bind9-chroot::server' do
       )
     end
 
-    it "creates /var/named/zones/example.com.erb" do
-      expect(chef_run).to create_template('/var/named/zones/example.com.erb').with(
+    it "creates /var/named/zones/db.example.com.erb" do
+      expect(chef_run).to create_template('/var/named/zones/db.example.com.erb').with(
         source: 'zonefile.erb',
         user: 'named',
         group: 'named',
@@ -202,7 +206,7 @@ describe 'bind9-chroot::server' do
           :nameserver => [
             'ns1.example.com',
             'ns2.example.com'
-          ],
+         ],
           :mail_exchange => [
             {
               'host' => 'ASPMX.L.GOOGLE.COM.',
@@ -220,8 +224,12 @@ describe 'bind9-chroot::server' do
       )
     end
 
-    it "notifies /var/named/zones/example.com immediately" do
-      expect(chef_run.template('/var/named/zones/example.com.erb')).to notify("template[/var/named/zones/example.com]").to(:create).immediately
+    it "notifies /var/named/zones/db.example.com immediately" do
+      expect(chef_run.template('/var/named/zones/db.example.com.erb')).to notify("template[/var/named/zones/db.example.com]").to(:create).immediately
+    end
+
+    it "does not create /var/named/zones/db.example.net.erb" do
+      expect(chef_run).to_not create_template('/var/named/zones/db.example.net.erb')
     end
 
   end

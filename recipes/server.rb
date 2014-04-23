@@ -112,32 +112,36 @@ when 'ubuntu'
 end
 
 node[:bind9][:zones].each do |z|
-  template "#{node[:bind9][:zones_path]}/#{z[:domain]}" do
-    source "#{node[:bind9][:zones_path]}/#{z[:domain]}.erb"
-    local true
-    owner node[:bind9][:user]
-    group node[:bind9][:user]
-    mode 0644
-    notifies :restart, "service[bind9]"
-    variables({
-      :serial => z[:zone_info][:serial] || Time.new.strftime("%Y%m%d%H%M%S")
-    })
-    action :nothing
-  end
+  case z['type']
+  when 'master'
 
-  template "#{node[:bind9][:zones_path]}/#{z[:domain]}.erb" do
-    source "zonefile.erb"
-    owner node[:bind9][:user]
-    group node[:bind9][:user]
-    mode 0644
-    variables({
-      :soa => z[:zone_info][:soa],
-      :contact => z[:zone_info][:contact],
-      :global_ttl => z[:zone_info][:global_ttl],
-      :nameserver => z[:zone_info][:nameserver],
-      :mail_exchange => z[:zone_info][:mail_exchange],
-      :records => z[:zone_info][:records]
-    })
-    notifies :create, "template[#{node[:bind9][:zones_path]}/#{z[:domain]}]", :immediately
+    template "#{node[:bind9][:zones_path]}/db.#{z[:domain]}" do
+      source "#{node[:bind9][:zones_path]}/db.#{z[:domain]}.erb"
+      local true
+      owner node[:bind9][:user]
+      group node[:bind9][:user]
+      mode 0644
+      notifies :restart, "service[bind9]"
+      variables(
+                :serial => z[:zone_info][:serial] || Time.new.strftime("%Y%m%d%H%M%S")
+               )
+      action :nothing
+    end
+
+    template "#{node[:bind9][:zones_path]}/db.#{z[:domain]}.erb" do
+      source "zonefile.erb"
+      owner node[:bind9][:user]
+      group node[:bind9][:user]
+      mode 0644
+      variables(
+                :soa => z[:zone_info][:soa],
+                :contact => z[:zone_info][:contact],
+                :global_ttl => z[:zone_info][:global_ttl],
+                :nameserver => z[:zone_info][:nameserver],
+                :mail_exchange => z[:zone_info][:mail_exchange],
+                :records => z[:zone_info][:records]
+               )
+      notifies :create, "template[#{node[:bind9][:zones_path]}/db.#{z[:domain]}]", :immediately
+    end
   end
 end

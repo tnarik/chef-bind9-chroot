@@ -2,6 +2,7 @@ source 'https://rubygems.org'
 
 gem 'berkshelf'
 gem 'test-kitchen'
+gem 'busser'
 gem 'kitchen-vagrant'
 gem 'foodcritic'
 gem 'chefspec'

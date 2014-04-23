@@ -14,4 +14,35 @@ suites:
     data_bags_path: "test/integration/default/data_bags"
     run_list:
       - recipe[bind9-chroot::default]
-    attributes:
+    attributes: {
+      'bind9': {
+         'zones': [
+           {
+            'domain':'example.com',
+            'zone_info': {
+              'serial': '00000',
+              'soa': 'ns.example.com',
+              'contact': 'root.example.com',
+              'global_ttl': 300,
+              'nameserver': [
+                'ns1.example.com',
+                'ns2.example.com'
+              ],
+              'mail_exchange': [
+                {
+                  'host': 'ASPMX.L.GOOGLE.COM.',
+                  'priority': 10,
+                }
+              ],
+              'records': [
+                {
+                  'name': 'www',
+                  'type': 'A',
+                  'ip': '127.0.0.1'
+                }
+              ]    
+            }
+          }
+        ]
+      }
+    }
