@@ -30,12 +30,12 @@ case node[:platform]
     end
 end
 
-directory File.join(node[:bind9][:chroot_dir].to_s, "/var/run/named") do
+directory "#{node[:bind9][:chroot_dir].to_s}/var/run/named" do
   owner node[:bind9][:user]
   group node[:bind9][:user]
   mode  0744
   recursive true
-  not_if { ::File.directory?(File.join(node[:bind9][:chroot_dir].to_s, "/var/run/named")) }
+  not_if { ::File.directory?("#{node[:bind9][:chroot_dir].to_s}/var/run/named") }
 end
 
 
@@ -65,13 +65,6 @@ ruby_block "move_config_to_chroot" do
   not_if { ::File.symlink?(node[:bind9][:config_path]) }
 end
 
-directory chroot_config_dir do
-  owner node[:bind9][:user]
-  group node[:bind9][:user]
-  mode 0744
-  recursive true
-end
-
 link "bind_config_from_chroot" do
   target_file node[:bind9][:config_path]
   to chroot_config_dir
@@ -80,21 +73,13 @@ end
 
 chroot_zones_dir = File.join(node[:bind9][:chroot_dir].to_s, node[:bind9][:zones_path])
 
-directory chroot_zones_dir do
-  owner node[:bind9][:user]
-  group node[:bind9][:user]
-  mode  0744
-  recursive true
-  not_if { chroot_zones_dir.start_with?(chroot_config_dir)  }
-end
-
 link "bind_zones_from_chroot" do
   target_file node[:bind9][:zones_path]
   to chroot_zones_dir
   not_if { ::File.symlink?(node[:bind9][:zones_path]) or chroot_zones_dir.start_with?(chroot_config_dir)  }
 end
 
-directory File.join(node[:bind9][:chroot_dir].to_s, "/dev") do
+directory "#{node[:bind9][:chroot_dir].to_s}/dev" do
   owner node[:bind9][:user]
   group node[:bind9][:user]
   mode  0744

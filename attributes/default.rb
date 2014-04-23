@@ -1,3 +1,4 @@
+default[:bind9][:zones] = []
 default[:bind9][:enable_ipv6] = true
 
 # Allow all clients to query the nameserver, no recursion
