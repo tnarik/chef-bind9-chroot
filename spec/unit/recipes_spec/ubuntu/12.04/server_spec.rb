@@ -135,6 +135,39 @@ describe 'bind9-chroot::server' do
       )
     end
 
+    it 'fills /etc/bind/named.conf.local with correct content' do
+      expect(chef_run).to render_file('/etc/bind/named.conf.local').with_content(
+'//
+// Do any local configuration here
+//
+
+// Consider adding the 1918 zones here, if they are not used in your
+// organization
+//include "/etc/bind/zones.rfc1918";
+
+zone "example.com" {
+  type master;
+  file "/etc/bind/zones/db.example.com";
+  allow-transfer {
+    192.168.1.2;
+    192.168.1.3;
+  };
+  also-notify {
+    192.168.1.2;
+    192.168.1.3;
+  };
+};
+
+zone "example.net" {
+  type slave;
+  file "db.example.net";
+  masters {
+    192.168.1.1;
+  };
+};'
+      )
+    end
+
     it "/etc/bind/named.conf.local notifies bind9 to restart" do
       expect(chef_run.template('/etc/bind/named.conf.local')).to notify('service[bind9]').to(:restart)
     end
@@ -190,6 +223,28 @@ describe 'bind9-chroot::server' do
             }
           ] 
         }
+      )
+    end
+
+    it 'fills /etc/bind/zones/db.example.com.erb with correct content' do
+      expect(chef_run).to render_file('/etc/bind/zones/db.example.com.erb').with_content(
+'$TTL 300
+@ IN SOA ns.example.com root.example.com (
+                <%= @serial %> ; serial [yyyyMMddNN]
+                4H      ; refresh
+                30M     ; retry
+                1W      ; expiry
+                1D      ; minimum
+)
+
+                           IN    NS ns.example.com
+                           IN    NS ns1.example.com
+                           IN    NS ns2.example.com
+
+                           IN    MX 10 ASPMX.L.GOOGLE.COM.
+
+www                        IN     A 127.0.0.1
+' 
       )
     end
 

@@ -11,7 +11,6 @@ platforms:
 
 suites:
   - name: default
-    data_bags_path: "test/integration/default/data_bags"
     run_list:
       - recipe[bind9-chroot::default]
     attributes: {
@@ -19,6 +18,15 @@ suites:
          'zones': [
            {
             'domain':'example.com',
+            'type':'master',
+            'allow_transfer': [
+              '192.168.1.2',
+              '192.168.1.3'
+            ],
+            'also_notify': [
+              '192.168.1.2',
+              '192.168.1.3'
+            ],
             'zone_info': {
               'serial': '00000',
               'soa': 'ns.example.com',
@@ -42,6 +50,13 @@ suites:
                 }
               ]    
             }
+          },
+          {
+            'domain':'example.net',
+            'type':'slave',
+            'masters': [
+              '192.168.1.1'
+            ]
           }
         ]
       }

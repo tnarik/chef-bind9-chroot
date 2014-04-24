@@ -224,6 +224,28 @@ zone "example.net" {
       )
     end
 
+    it 'fills /var/named/zones/db.example.com.erb with correct content' do
+      expect(chef_run).to render_file('/var/named/zones/db.example.com.erb').with_content(
+'$TTL 300
+@ IN SOA ns.example.com root.example.com (
+                <%= @serial %> ; serial [yyyyMMddNN]
+                4H      ; refresh
+                30M     ; retry
+                1W      ; expiry
+                1D      ; minimum
+)
+
+                           IN    NS ns.example.com
+                           IN    NS ns1.example.com
+                           IN    NS ns2.example.com
+
+                           IN    MX 10 ASPMX.L.GOOGLE.COM.
+
+www                        IN     A 127.0.0.1
+' 
+      )
+    end
+
     it "notifies /var/named/zones/db.example.com immediately" do
       expect(chef_run.template('/var/named/zones/db.example.com.erb')).to notify("template[/var/named/zones/db.example.com]").to(:create).immediately
     end
