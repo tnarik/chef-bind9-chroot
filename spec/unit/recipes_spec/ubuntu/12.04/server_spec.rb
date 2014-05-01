@@ -211,7 +211,7 @@ zone "example.net" {
           ],
           :mail_exchange => [
             {
-              'host' => 'ASPMX.L.GOOGLE.COM.',
+              'host' => 'ASPMX.L.GOOGLE.COM',
               'priority' => 10
             }
           ],
@@ -229,7 +229,7 @@ zone "example.net" {
     it 'fills /etc/bind/zones/db.example.com.erb with correct content' do
       expect(chef_run).to render_file('/etc/bind/zones/db.example.com.erb').with_content(
 '$TTL 300
-@ IN SOA ns.example.com root.example.com (
+@ IN SOA ns.example.com. root.example.com. (
                 <%= @serial %> ; serial [yyyyMMddNN]
                 4H      ; refresh
                 30M     ; retry
@@ -237,9 +237,9 @@ zone "example.net" {
                 1D      ; minimum
 )
 
-                           IN    NS ns.example.com
-                           IN    NS ns1.example.com
-                           IN    NS ns2.example.com
+                           IN    NS ns.example.com.
+                           IN    NS ns1.example.com.
+                           IN    NS ns2.example.com.
 
                            IN    MX 10 ASPMX.L.GOOGLE.COM.
 

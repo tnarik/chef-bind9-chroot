@@ -27,7 +27,7 @@ describe 'named.conf.local' do
     end
   end
 
-  it 'should contain' do
+  it 'should contain correct content' do
     case RSpec.configuration.os[:family]
     when 'Ubuntu'
       expect(file('/etc/bind/named.conf.local').content).to match(
@@ -93,4 +93,40 @@ zone "example.net" {
       )
     end
   end
+end
+
+describe 'db.example.com' do
+  it 'should exist' do
+    case RSpec.configuration.os[:family]
+    when 'Ubuntu'
+      expect(file('/etc/bind/zones/db.example.com')).to be_file
+    else
+      expect(file('/var/named/zones/db.example.com')).to be_file
+    end
+  end
+
+  it 'should contain correct content' do
+    case RSpec.configuration.os[:family]
+    when 'Ubuntu'
+      expect(file('/etc/bind/zones/db.example.com').content).to match(
+'$TTL 300
+@ IN SOA ns.example.com. root.example.com. (
+                0000 ; serial [yyyyMMddNN]
+                4H      ; refresh
+                30M     ; retry
+                1W      ; expiry
+                1D      ; minimum
+)
+
+                           IN    NS ns.example.com.
+                           IN    NS ns1.example.com.
+			   IN    NS ns2.example.com.
+
+                           IN    MX 10 ASPMX.L.GOOGLE.COM.
+
+www                        IN     A 127.0.0.1'
+      )
+#    else
+    end
+  end 
 end

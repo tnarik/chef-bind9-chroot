@@ -25,7 +25,7 @@ Zones = [
       ],
       'mail_exchange' => [
         {
-          'host' => 'ASPMX.L.GOOGLE.COM.',
+          'host' => 'ASPMX.L.GOOGLE.COM',
           'priority' => 10,
         }
         ],

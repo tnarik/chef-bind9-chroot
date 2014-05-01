@@ -112,9 +112,8 @@ when 'ubuntu'
 end
 
 node[:bind9][:zones].each do |z|
-  case z['type']
-  when 'master'
 
+  if z[:type] == "master" and z[:zone_info].is_a?(Hash)
     template "#{node[:bind9][:zones_path]}/db.#{z[:domain]}" do
       source "#{node[:bind9][:zones_path]}/db.#{z[:domain]}.erb"
       local true
