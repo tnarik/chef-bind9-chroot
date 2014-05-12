@@ -19,7 +19,7 @@
 case node[:platform]
   when "ubuntu"
     if node[:platform_version].to_f >= 12.04
-     ruby_block "copy_openssl_dependencies" do
+      ruby_block "copy_openssl_dependencies" do
         block do
           FileUtils.mkdir_p File.dirname(File.join(node[:bind9][:chroot_dir], node[:bind9][:openssl]))
           FileUtils.cp_r node[:bind9][:openssl], File.dirname(File.join(node[:bind9][:chroot_dir], node[:bind9][:openssl]))
