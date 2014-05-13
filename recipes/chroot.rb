@@ -17,17 +17,42 @@
 #
 
 case node[:platform]
-  when "ubuntu"
-    if node[:platform_version].to_f >= 12.04
-      ruby_block "copy_openssl_dependencies" do
-        block do
-          FileUtils.mkdir_p File.dirname(File.join(node[:bind9][:chroot_dir], node[:bind9][:openssl]))
-          FileUtils.cp_r node[:bind9][:openssl], File.dirname(File.join(node[:bind9][:chroot_dir], node[:bind9][:openssl]))
-        end
-        not_if { ::File.directory?(File.join(node[:bind9][:chroot_dir], node[:bind9][:openssl])) or
-                  !::File.directory?(node[:bind9][:openssl]) }
+when "ubuntu"
+  if node[:platform_version].to_f >= 12.04
+    ruby_block "copy_openssl_dependencies" do
+      block do
+        FileUtils.mkdir_p File.dirname(File.join(node[:bind9][:chroot_dir], node[:bind9][:openssl]))
+        FileUtils.cp_r node[:bind9][:openssl], File.dirname(File.join(node[:bind9][:chroot_dir], node[:bind9][:openssl]))
       end
+      not_if { ::File.directory?(File.join(node[:bind9][:chroot_dir], node[:bind9][:openssl])) or
+                !::File.directory?(node[:bind9][:openssl]) }
     end
+  end
+  
+  ruby_block "modify_init_script" do
+    block do
+      rc = Chef::Util::FileEdit.new("/etc/init.d/bind9")
+      rc.search_file_replace(Regexp.new("/var/run/named"), "${PIDDIR}")
+      rc.write_file
+    end
+    not_if { ::File.readlines('/etc/init.d/bind9').grep(Regexp.new("/var/run/named")).empty? }
+  end
+
+  service 'apparmor' do
+    supports :status => true, :restart => true, :reload => true
+    action [:enable]
+    only_if { ::File.exists?("/etc/init.d/apparmor") }
+  end
+
+  template "/etc/apparmor.d/local/usr.sbin.named" do
+    source "local.usr.sbin.named.erb"
+    owner 'root'
+    group 'root'
+    mode '0644'
+    notifies :restart, "service[apparmor]", :immediately
+    only_if { ::File.exists?("/etc/apparmor.d/local/usr.sbin.named") }
+  end
+
 end
 
 directory "#{node[:bind9][:chroot_dir].to_s}/var/run/named" do
@@ -36,16 +61,6 @@ directory "#{node[:bind9][:chroot_dir].to_s}/var/run/named" do
   mode  0744
   recursive true
   not_if { ::File.directory?("#{node[:bind9][:chroot_dir].to_s}/var/run/named") }
-end
-
-
-ruby_block "modify_init_script" do
-  block do
-    rc = Chef::Util::FileEdit.new("/etc/init.d/bind9")
-    rc.search_file_replace(Regexp.new("/var/run/named"), "${PIDDIR}")
-    rc.write_file
-  end
-  not_if { ::File.readlines('/etc/init.d/bind9').grep(Regexp.new("/var/run/named")).empty? }
 end
 
 chroot_config_dir = File.join(node[:bind9][:chroot_dir].to_s, node[:bind9][:config_path])

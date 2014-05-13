@@ -11,7 +11,7 @@
 zone "<%= conf['domain'] %>" {
   type <%= conf['type'] %>;
     <% if conf['type'] == "master" %>
-  file "<%= node[:bind9][:zones_path] %>/db.<%= conf["domain"] %>";
+  file "<%= node[:bind9][:chroot_dir] %><%= node[:bind9][:zones_path] %>/<%= conf["domain"] %>";
       <% if conf['allow_transfer'].is_a?(Array) %>
   allow-transfer {
         <% conf['allow_transfer'].each do |ip| -%>
@@ -27,7 +27,7 @@ zone "<%= conf['domain'] %>" {
   };
       <% end %>
     <% elsif conf['type'] == "slave" -%>
-  file "db.<%= conf["domain"] %>";
+  file "<%= conf["domain"] %>";
   masters {
       <% conf['masters'].each do |ip| -%>
     <%= ip %>;

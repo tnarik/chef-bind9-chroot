@@ -16,7 +16,7 @@ when 'Ubuntu'
     it { should be_running }
   end
 
-  describe file('/etc/bind/named.conf.local') do
+  describe file('/var/chroot/named/etc/bind/named.conf.local') do
     contents = '//
 // Do any local configuration here
 //
@@ -27,7 +27,7 @@ when 'Ubuntu'
 
 zone "example.com" {
   type master;
-  file "/etc/bind/zones/example.com";
+  file "/var/chroot/named/etc/bind/zones/example.com";
   allow-transfer {
     192.168.1.2;
     192.168.1.3;
@@ -49,7 +49,7 @@ zone "example.net" {
     its(:content) {should match contents }
   end
 
-  describe file('/etc/bind/zones/example.com') do
+  describe file('/var/chroot/named/etc/bind/zones/example.com') do
     contents = '\$TTL 300
 @ IN SOA ns.example.com. root.example.com. \(
                 00000 \; serial \[yyyyMMddNN\]
@@ -82,7 +82,7 @@ else
     it { should be_running }
   end
 
-  describe file('/etc/named/named.conf.local') do
+  describe file('/var/chroot/named/etc/named/named.conf.local') do
     contents = '//
 // Do any local configuration here
 //
@@ -93,7 +93,7 @@ else
 
 zone "example.com" {
   type master;
-  file "/var/named/zones/example.com";
+  file "/var/chroot/named/var/named/zones/example.com";
   allow-transfer {
     192.168.1.2;
     192.168.1.3;
@@ -115,7 +115,7 @@ zone "example.net" {
     its(:content) {should match contents }
   end
 
-  describe file('/var/named/zones/example.com') do
+  describe file('/var/chroot/named/var/named/zones/example.com') do
     content = '\$TTL 300
 @ IN SOA ns.example.com. root.example.com. \(
                 00000 \; serial \[yyyyMMddNN\]

@@ -34,22 +34,21 @@ service "bind9" do
   action [ :enable ]
 end
 
-directory "#{node[:bind9][:chroot_dir].to_s}#{node[:bind9][:data_path]}" do
+directory File.join(node[:bind9][:chroot_dir].to_s, node[:bind9][:data_path]) do
   owner node[:bind9][:user]
   group node[:bind9][:user]
   mode 0755
   recursive true
 end
 
-log_dir = File.dirname(node[:bind9][:log_file])
-directory "#{node[:bind9][:chroot_dir].to_s}#{log_dir}" do
+directory File.dirname(File.join(node[:bind9][:chroot_dir].to_s, node[:bind9][:log_file])) do
   owner node[:bind9][:user]
   group node[:bind9][:user]
   mode 0755
   recursive true
 end
 
-directory "#{node[:bind9][:chroot_dir].to_s}#{node[:bind9][:zones_path]}" do
+directory File.join(node[:bind9][:chroot_dir].to_s, node[:bind9][:zones_path]) do
   owner node[:bind9][:user]
   group node[:bind9][:user]
   mode 0744
@@ -72,7 +71,7 @@ if node[:bind9][:resolvconf]
  # end
 end
 
-template "#{node[:bind9][:config_path]}/#{node[:bind9][:options_file]}" do
+template File.join(node[:bind9][:config_path], node[:bind9][:options_file]) do
   source "named.conf.options.erb"
   owner node[:bind9][:user]
   group node[:bind9][:user]
@@ -80,7 +79,7 @@ template "#{node[:bind9][:config_path]}/#{node[:bind9][:options_file]}" do
   notifies :restart, "service[bind9]"
 end
 
-template "#{node[:bind9][:config_path]}/#{node[:bind9][:config_file]}" do
+template File.join(node[:bind9][:config_path], node[:bind9][:config_file]) do
   source "named.conf.erb"
   owner node[:bind9][:user]
   group node[:bind9][:user]
@@ -88,7 +87,7 @@ template "#{node[:bind9][:config_path]}/#{node[:bind9][:config_file]}" do
   notifies :restart, "service[bind9]"
 end
 
-template "#{node[:bind9][:config_path]}/#{node[:bind9][:local_file]}" do
+template File.join(node[:bind9][:config_path], node[:bind9][:local_file]) do
   source "named.conf.local.erb"
   owner node[:bind9][:user]
   group node[:bind9][:user]
@@ -99,48 +98,55 @@ template "#{node[:bind9][:config_path]}/#{node[:bind9][:local_file]}" do
   notifies :restart, "service[bind9]"
 end
 
-case node[:platform]
-when 'ubuntu'
-  template node[:bind9][:defaults_file] do
-    source "bind9.erb"
-    owner node[:bind9][:user]
-    group node[:bind9][:user]
-    mode 0644
-    notifies :restart, "service[bind9]"
-    not_if { node[:bind9][:defaults_file].nil? }
-  end
+template 'defaults_file' do
+  path node[:bind9][:defaults_file]
+  source "bind9.erb"
+  owner node[:bind9][:user]
+  group node[:bind9][:user]
+  mode 0644
+  notifies :restart, "service[bind9]"
+  not_if { node[:bind9][:defaults_file].nil? }
 end
 
-node[:bind9][:zones].each do |z|
+directory 'recreate zones path' do
+  path node[:bind9][:zones_path]
+  owner node[:bind9][:user]
+  group node[:bind9][:user]
+  mode 0744
+  recursive true
+  not_if { ::File.directory?(node[:bind9][:zones_path]) or ::File.symlink?(node[:bind9][:zones_path]) }
+end
 
-  if z[:type] == "master" and z[:zone_info].is_a?(Hash)
-    template "#{node[:bind9][:zones_path]}/db.#{z[:domain]}" do
-      source "#{node[:bind9][:zones_path]}/db.#{z[:domain]}.erb"
+node[:bind9][:zones].each do |zone|
+
+  if zone[:type] == "master" and zone[:zone_info].is_a?(Hash)
+    template File.join(node[:bind9][:zones_path], zone[:domain]) do
+      source  File.join(node[:bind9][:zones_path], "#{zone[:domain]}.erb")
       local true
       owner node[:bind9][:user]
       group node[:bind9][:user]
       mode 0644
       notifies :restart, "service[bind9]"
       variables(
-                :serial => z[:zone_info][:serial] || Time.new.strftime("%Y%m%d%H%M%S")
+                :serial => zone[:zone_info][:serial] || Time.new.strftime("%Y%m%d%H%M%S")
                )
       action :nothing
     end
 
-    template "#{node[:bind9][:zones_path]}/db.#{z[:domain]}.erb" do
+    template File.join(node[:bind9][:zones_path], "#{zone[:domain]}.erb") do
       source "zonefile.erb"
       owner node[:bind9][:user]
       group node[:bind9][:user]
       mode 0644
       variables(
-                :soa => z[:zone_info][:soa],
-                :contact => z[:zone_info][:contact],
-                :global_ttl => z[:zone_info][:global_ttl],
-                :nameserver => z[:zone_info][:nameserver],
-                :mail_exchange => z[:zone_info][:mail_exchange],
-                :records => z[:zone_info][:records]
+                :soa => zone[:zone_info][:soa],
+                :contact => zone[:zone_info][:contact],
+                :global_ttl => zone[:zone_info][:global_ttl],
+                :nameserver => zone[:zone_info][:nameserver],
+                :mail_exchange => zone[:zone_info][:mail_exchange],
+                :records => zone[:zone_info][:records]
                )
-      notifies :create, "template[#{node[:bind9][:zones_path]}/db.#{z[:domain]}]", :immediately
+      notifies :create, "template[#{node[:bind9][:zones_path]}/#{zone[:domain]}]", :immediately
     end
   end
 end
