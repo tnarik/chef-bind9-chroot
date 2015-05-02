@@ -1,0 +1,16 @@
+# Site-specific additions and overrides for usr.sbin.named.
+# For more details, please see /etc/apparmor.d/local/README.
+
+# named chroot
+/var/chroot/named/** r,
+/var/chroot/named/etc/bind/** r,
+/var/chroot/named/var/lib/bind/ rw,
+/var/chroot/named/var/lib/bind/** rw,
+/var/chroot/named/var/cache/bind/ rw,
+/var/chroot/named/var/cache/bind/** rw,
+/var/chroot/named/var/log/named/** rw,
+
+/var/chroot/named/var/run/named/named.pid w,
+/var/chroot/named/var/run/named/session.key w,
+
+/var/chroot/named/usr/lib/x86_64-linux-gnu/openssl-1.0.0/engines/libgost.so rm,

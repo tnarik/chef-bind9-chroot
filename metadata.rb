@@ -9,7 +9,7 @@ issues_url       'https://github.com/tnarik/chef-bind9-chroot/issues'
 version          '0.4.2'
 
 %w{resolvconf}.each do |cookbook|
-  depends(cookbook)
+  depends cookbook
 end
 
 %w{ubuntu debian centos}.each do |os|

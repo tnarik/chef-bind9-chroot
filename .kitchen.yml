@@ -1,0 +1,115 @@
+---
+driver:
+  name: vagrant
+
+provisioner:
+  name: chef_zero
+
+platforms:
+  - name: ubuntu-12.04
+  - name: centos-6.4
+
+suites:
+  - name: default
+    run_list:
+      - recipe[bind9-chroot::default]
+    attributes: {
+      'bind9': {
+         'zones': [
+           {
+            'domain':'example.com',
+            'type':'master',
+            'allow_transfer': [
+              '192.168.1.2',
+              '192.168.1.3'
+            ],
+            'also_notify': [
+              '192.168.1.2',
+              '192.168.1.3'
+            ],
+            'zone_info': {
+              'serial': '00000',
+              'soa': 'ns.example.com',
+              'contact': 'root.example.com',
+              'global_ttl': 300,
+              'nameserver': [
+                'ns1.example.com',
+                'ns2.example.com'
+              ],
+              'mail_exchange': [
+                {
+                  'host': 'ASPMX.L.GOOGLE.COM',
+                  'priority': 10,
+                }
+              ],
+              'records': [
+                {
+                  'name': 'www',
+                  'type': 'A',
+                  'ip': '127.0.0.1'
+                }
+              ]    
+            }
+          },
+          {
+            'domain':'example.net',
+            'type':'slave',
+            'masters': [
+              '192.168.1.1'
+            ]
+          }
+        ]
+      }
+    }
+  - name: chroot
+    run_list:
+      - recipe[bind9-chroot::default]
+    attributes: {
+      'bind9': {
+         'chroot_dir': '/var/chroot/named',
+         'zones': [
+           {
+            'domain':'example.com',
+            'type':'master',
+            'allow_transfer': [
+              '192.168.1.2',
+              '192.168.1.3'
+            ],
+            'also_notify': [
+              '192.168.1.2',
+              '192.168.1.3'
+            ],
+            'zone_info': {
+              'serial': '00000',
+              'soa': 'ns.example.com',
+              'contact': 'root.example.com',
+              'global_ttl': 300,
+              'nameserver': [
+                'ns1.example.com',
+                'ns2.example.com'
+              ],
+              'mail_exchange': [
+                {
+                  'host': 'ASPMX.L.GOOGLE.COM',
+                  'priority': 10,
+                }
+              ],
+              'records': [
+                {
+                  'name': 'www',
+                  'type': 'A',
+                  'ip': '127.0.0.1'
+                }
+              ]
+            }
+          },
+          {
+            'domain':'example.net',
+            'type':'slave',
+            'masters': [
+              '192.168.1.1'
+            ]
+          }
+        ]
+      }
+    }

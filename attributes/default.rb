@@ -1,3 +1,4 @@
+default[:bind9][:zones] = []
 default[:bind9][:enable_ipv6] = true
 
 # Allow all clients to query the nameserver, no recursion
@@ -34,7 +35,7 @@ else
   default[:bind9][:defaults_file] = "/etc/default/bind9"
   default[:bind9][:data_path] = "/var/cache/bind"
   default[:bind9][:zones_path] = "/etc/bind/zones"
-  default[:bind9][:log_file] = "/var/log/bind/bind.log"
+  default[:bind9][:log_file] = "/var/log/named/bind.log"
   default[:bind9][:user] = "bind"
   
   default[:bind9][:openssl] = "/usr/lib/x86_64-linux-gnu/openssl-1.0.0"

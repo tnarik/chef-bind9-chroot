@@ -7,14 +7,34 @@
 //include "/etc/bind/zones.rfc1918";
 
 <% @zonefiles.each do |conf| -%>
-zone "<%= conf["domain"] %>" IN {
-  type <%= conf["type"] %>;
-  file "<%= node[:bind9][:zones_path] %>/<%= conf["domain"] %>";
+  <% if conf['type'] %>
+zone "<%= conf['domain'] %>" {
+  type <%= conf['type'] %>;
+    <% if conf['type'] == "master" %>
+  file "<%= node[:bind9][:chroot_dir] %><%= node[:bind9][:zones_path] %>/<%= conf["domain"] %>";
+      <% if conf['allow_transfer'].is_a?(Array) %>
   allow-transfer {
-  <% conf["allow_transfer"].each do |ip| -%>
+        <% conf['allow_transfer'].each do |ip| -%>
     <%= ip %>;
-  <% end %>
+        <% end %>
   };
+      <% end %>
+      <% if conf['also_notify'].is_a?(Array) -%>
+  also-notify {
+        <% conf['also_notify'].each do |ip| -%> 
+    <%= ip %>;
+        <% end %>
+  };
+      <% end %>
+    <% elsif conf['type'] == "slave" -%>
+  file "<%= conf["domain"] %>";
+  masters {
+      <% conf['masters'].each do |ip| -%>
+    <%= ip %>;
+      <% end %>
+  };
+    <% end %>
 };
 
+  <% end %>
 <% end %>

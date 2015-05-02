@@ -1,5 +1,5 @@
 $TTL <%= @global_ttl %>
-@ IN SOA <%= @soa %> <%= @contact %> (
+@ IN SOA <%= @soa %>. <%= @contact %>. (
                 <%%= @serial %> ; serial [yyyyMMddNN]
                 4H      ; refresh
                 30M     ; retry
@@ -7,16 +7,15 @@ $TTL <%= @global_ttl %>
                 1D      ; minimum
 )
 
-                           IN    NS <%= @soa %>
+                           IN    NS <%= @soa %>.
 <% @nameserver.each do |ns| -%>
-                           IN    NS <%= ns %>
+                           IN    NS <%= ns %>.
 <% end %>
 
 <% @mail_exchange.each do |mx| -%>
-                           IN    MX <%= mx['priority'] %> <%= mx['host'] %>
+                           IN    MX <%= mx['priority'] %> <%= mx['host'] %>.
 <% end %>
 
 <% @records.each do |record| -%>
-<%= "%-20s %5s IN %5s %s" % [record['name'],record['ttl'],record['type'], 
-  (record['ip'].nil? || record['ip'].empty?)? node['ipaddress']: record['ip'] ] %>
+<%= "%-20s %5s IN %5s %s" % [record['name'],record['ttl'],record['type'],(record['ip'].nil? || record['ip'].empty?)? node['ipaddress']: record['ip'] ] %>
 <% end %>
